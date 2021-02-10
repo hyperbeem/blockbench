@@ -58,42 +58,48 @@ Object.assign(Blockbench, {
 			}).click()
 		}
 	},
-	pickDirectory(options) {
+	
+	// ALTERED: 10/02/2021
+	pick(options, type) {
 		if (typeof options !== 'object') {options = {}}
 		/**
 		 	resource_id
 			startpath
 			title
 		 */
+		if (typeof type == "string")
+		{
+			if (isApp) {
 
-		if (isApp) {
-
-			if (!options.startpath && options.resource_id) {
-				options.startpath = StateMemory.dialog_paths[options.resource_id]
+				if (!options.startpath && options.resource_id) {
+					options.startpath = StateMemory.dialog_paths[options.resource_id]
+				}
+	
+				let dirNames = electron.dialog.showOpenDialogSync(currentwindow, {
+					title: options.title ? options.title : '',
+					dontAddToRecent: true,
+					properties: [type],
+					defaultPath: settings.streamer_mode.value
+						? app.getPath('desktop')
+						: options.startpath
+				})
+	
+				if (!dirNames) return null;
+	
+				if (options.resource_id) {
+					StateMemory.dialog_paths[options.resource_id] = PathModule.dirname(dirNames[0]);
+					StateMemory.save('dialog_paths');
+				}
+	
+				return dirNames[0];
+	
+			} else {
+	
+				console.warn('Picking directories is currently not supported in the web app');
+	
 			}
-
-			let dirNames = electron.dialog.showOpenDialogSync(currentwindow, {
-				title: options.title ? options.title : '',
-				dontAddToRecent: true,
-				properties: ['openDirectory'],
-				defaultPath: settings.streamer_mode.value
-					? app.getPath('desktop')
-					: options.startpath
-			})
-
-			if (!dirNames) return null;
-
-			if (options.resource_id) {
-				StateMemory.dialog_paths[options.resource_id] = PathModule.dirname(dirNames[0]);
-				StateMemory.save('dialog_paths');
-			}
-
-			return dirNames[0];
-
 		} else {
-
-			console.warn('Picking directories is currently not supported in the web app');
-
+			console.warn('type is not a string!');
 		}
 	},
 	read(files, options, cb) {

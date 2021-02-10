@@ -184,24 +184,24 @@ function buildForm(dialog) {
 					})
 
 					bar.on('click', e => {
+						let path;
 						function fileCB(files) {
 							data.value = files[0].path;
-							input.val(data.value);
+							data.bar[0].children.item(1).value = data.value;
 							dialog.updateFormValues()
 						}
+						// ALTERED: 10/02/2021
 						switch (data.type) {
 							case 'file':
-								Blockbench.import({
-									resource_id: data.resource_id,
-									extensions: data.extensions,
-									type: data.filetype,
-									startpath: data.value
-								}, fileCB);
+								path = Blockbench.pick({
+									startpath: data.value,
+								}, 'openFile')
+								if (path) fileCB([{path}]);
 								break;
 							case 'folder':
-								let path = Blockbench.pickDirectory({
+								path = Blockbench.pick({
 									startpath: data.value,
-								})
+								}, 'openDirectory')
 								if (path) fileCB([{path}]);
 								break;
 							case 'save':
